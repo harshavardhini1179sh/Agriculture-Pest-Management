@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if application else 'Add' }} Treatment Application{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if application else 'Add' }} Treatment Application</h1>
+<form method="post">
+    <div class="mb-2">
+        <label class="form-label">Pest Report ID</label>
+        <select name="pest_report_id" class="form-select" required>
+            {% for r in reports %}
+            <option value="{{ r.report_id }}" {{ 'selected' if application and application.pest_report_id == r.report_id else '' }}>{{ r.report_id }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Treatment</label>
+        <select name="treatment_id" class="form-select" required>
+            {% for t in treatments %}
+            <option value="{{ t.treatment_id }}" {{ 'selected' if application and application.treatment_id == t.treatment_id else '' }}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Crop</label>
+        <select name="crop_id" class="form-select" required>
+            {% for c in crops %}
+            <option value="{{ c.crop_id }}" {{ 'selected' if application and application.crop_id == c.crop_id else '' }}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Application Date</label>
+        <input type="date" name="application_date" class="form-control" value="{{ application.application_date if application else '' }}" required>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Effectiveness Rating (1-5)</label>
+        <input type="number" min="1" max="5" name="effectiveness_rating" class="form-control" value="{{ application.effectiveness_rating if application and application.effectiveness_rating is not none else '' }}">
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Cost</label>
+        <input type="number" step="0.01" name="cost" class="form-control" value="{{ application.cost if application and application.cost is not none else '' }}">
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a class="btn btn-secondary" href="{{ url_for('applications_list') }}">Cancel</a>
+</form>
+{% endblock %}

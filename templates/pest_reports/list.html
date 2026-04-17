@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Pest Reports{% endblock %}
+{% block content %}
+<h1>Pest Reports</h1>
+<p class="text-muted small">You can edit or delete only <strong>your own</strong> reports; <strong>admin</strong> can edit/delete any.</p>
+<p><a class="btn btn-success" href="{{ url_for('pest_report_add') }}">Add Pest Report</a></p>
+<table class="table table-striped">
+    <thead><tr><th>ID</th><th>Crop</th><th>Pest</th><th>Region</th><th>Status</th>{% if is_admin %}<th>Added by</th>{% endif %}<th></th></tr></thead>
+    <tbody>
+        {% for r in reports %}
+        <tr>
+            <td>{{ r.report_id }}</td>
+            <td>{{ r.crop_name or '-' }}</td>
+            <td>{{ r.pest_name or '-' }}</td>
+            <td>{{ r.region_name or '-' }}</td>
+            <td>{{ r.status or 'pending' }}</td>
+            {% if is_admin %}<td>{{ r.created_by or '-' }}</td>{% endif %}
+            <td>
+                {% if is_admin or (r.created_by and r.created_by == current_user) %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('pest_report_edit', id=r.report_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('pest_report_delete', id=r.report_id) }}" class="d-inline" onsubmit="return confirm('Delete?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ 7 if is_admin else 6 }}">No pest reports yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

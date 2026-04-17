@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if crop else 'Add' }} Crop{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if crop else 'Add' }} Crop</h1>
+<form method="post">
+    <div class="mb-2">
+        <label class="form-label">Region</label>
+        <select name="region_id" class="form-select" required>
+            {% for r in regions %}
+            <option value="{{ r.region_id }}" {{ 'selected' if crop and crop.region_id == r.region_id else '' }}>{{ r.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" value="{{ crop.name if crop else '' }}" required>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a class="btn btn-secondary" href="{{ url_for('crops_list') }}">Cancel</a>
+</form>
+{% endblock %}

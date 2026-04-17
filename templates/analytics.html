@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Analytics - Pest Management{% endblock %}
+{% block content %}
+<h1>Analytics Dashboard</h1>
+<p class="text-muted">Charts are generated from live database data (aggregate queries).</p>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">Pest Reports by Region</div>
+            <div class="card-body"><canvas id="chartRegion" height="250"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">Reports by Status</div>
+            <div class="card-body"><canvas id="chartStatus" height="250"></canvas></div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">Top 10 Pests (by report count)</div>
+            <div class="card-body"><canvas id="chartPests" height="250"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">Treatment Usage (applications)</div>
+            <div class="card-body"><canvas id="chartTreatment" height="250"></canvas></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+function pieChart(canvasId, url, colors) {
+    fetch(url).then(r => r.json()).then(data => {
+        new Chart(document.getElementById(canvasId), {
+            type: 'pie',
+            data: {
+                labels: data.map(d => d.label),
+                datasets: [{ data: data.map(d => d.value), backgroundColor: colors }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    });
+}
+function barChart(canvasId, url, label) {
+    fetch(url).then(r => r.json()).then(data => {
+        new Chart(document.getElementById(canvasId), {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.label),
+                datasets: [{ label: label, data: data.map(d => d.value), backgroundColor: 'rgba(108, 117, 125, 0.8)' }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+        });
+    });
+}
+var colors = ['#198754','#20c997','#0d6efd','#6f42c1','#fd7e14','#dc3545','#ffc107','#0dcaf0'];
+pieChart('chartRegion', '{{ url_for("api_reports_by_region") }}', colors);
+pieChart('chartStatus', '{{ url_for("api_reports_by_status") }}', colors.slice(0, 4));
+barChart('chartPests', '{{ url_for("api_top_pests") }}', 'Report count');
+barChart('chartTreatment', '{{ url_for("api_treatment_usage") }}', 'Applications');
+</script>
+{% endblock %}

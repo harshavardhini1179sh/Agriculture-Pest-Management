@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Pests by Crop{% endblock %}
+{% block content %}
+<h1>Pests by Crop</h1>
+<table class="table table-striped">
+    <thead><tr><th>Crop</th><th>Pest</th><th>Report Count</th></tr></thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.crop_name }}</td>
+            <td>{{ row.pest_name }}</td>
+            <td>{{ row.report_count }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No data. Add pest reports first.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

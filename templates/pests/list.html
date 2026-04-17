@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Pests{% endblock %}
+{% block content %}
+<h1>Pests</h1>
+<p class="text-muted small">Only <strong>admin</strong> can add, edit, or delete pests.</p>
+{% if is_admin %}<p><a class="btn btn-success" href="{{ url_for('pest_add') }}">Add Pest</a></p>{% endif %}
+<table class="table table-striped">
+    <thead><tr><th>ID</th><th>Common Name</th><th>Scientific Name</th><th>Type</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+        {% for p in pests %}
+        <tr>
+            <td>{{ p.pest_id }}</td>
+            <td>{{ p.common_name }}</td>
+            <td>{{ p.scientific_name or '-' }}</td>
+            <td>{{ p.pest_type or '-' }}</td>
+            {% if is_admin %}
+            <td>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('pest_edit', id=p.pest_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('pest_delete', id=p.pest_id) }}" class="d-inline" onsubmit="return confirm('Delete?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ 5 if is_admin else 4 }}">No pests yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

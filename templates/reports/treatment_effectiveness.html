@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Treatment Effectiveness{% endblock %}
+{% block content %}
+<h1>Treatment Effectiveness</h1>
+<table class="table table-striped">
+    <thead><tr><th>Treatment</th><th>Pest</th><th>Crop</th><th>Applications</th><th>Avg Effectiveness</th><th>Avg Cost</th></tr></thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.treatment_name }}</td>
+            <td>{{ row.pest_name }}</td>
+            <td>{{ row.crop_name }}</td>
+            <td>{{ row.app_count }}</td>
+            <td>{{ row.avg_effectiveness if row.avg_effectiveness is not none else '-' }}</td>
+            <td>{{ row.avg_cost if row.avg_cost is not none else '-' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No data. Add treatment applications first.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

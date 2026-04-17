@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if report else 'Add' }} Pest Report{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if report else 'Add' }} Pest Report</h1>
+<form method="post">
+    <div class="mb-2">
+        <label class="form-label">Pest</label>
+        <select name="pest_id" class="form-select" required>
+            {% for p in pests %}
+            <option value="{{ p.pest_id }}" {{ 'selected' if report and report.pest_id == p.pest_id else '' }}>{{ p.common_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Crop</label>
+        <select name="crop_id" class="form-select" required>
+            {% for c in crops %}
+            <option value="{{ c.crop_id }}" {{ 'selected' if report and report.crop_id == c.crop_id else '' }}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Region</label>
+        <select name="region_id" class="form-select" required>
+            {% for r in regions %}
+            <option value="{{ r.region_id }}" {{ 'selected' if report and report.region_id == r.region_id else '' }}>{{ r.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="pending" {{ 'selected' if (not report) or (report and report.status == 'pending') or (report and report.status == 'active') else '' }}>pending</option>
+            <option value="verified" {{ 'selected' if report and report.status == 'verified' else '' }}>verified</option>
+            <option value="resolved" {{ 'selected' if report and report.status == 'resolved' else '' }}>resolved</option>
+        </select>
+        <small class="form-text text-muted">pending → verified (confirmed) → resolved (problem solved).</small>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a class="btn btn-secondary" href="{{ url_for('pest_reports_list') }}">Cancel</a>
+</form>
+{% endblock %}

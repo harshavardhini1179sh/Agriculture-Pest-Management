@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Crops{% endblock %}
+{% block content %}
+<h1>Crops</h1>
+<p class="text-muted small">Only <strong>admin</strong> can add, edit, or delete crops.</p>
+{% if is_admin %}<p><a class="btn btn-success" href="{{ url_for('crop_add') }}">Add Crop</a></p>{% endif %}
+<table class="table table-striped">
+    <thead><tr><th>ID</th><th>Name</th><th>Region</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+        {% for c in crops %}
+        <tr>
+            <td>{{ c.crop_id }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.region_name or '-' }}</td>
+            {% if is_admin %}
+            <td>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('crop_edit', id=c.crop_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('crop_delete', id=c.crop_id) }}" class="d-inline" onsubmit="return confirm('Delete?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ 5 if is_admin else 4 }}">No crops yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
