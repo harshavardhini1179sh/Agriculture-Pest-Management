@@ -37,7 +37,6 @@ def _add_farmer(name, email, password_hash_value):
     )
 
 
-# ---------- Home / Dashboard ----------
 @app.route("/")
 def index():
     try:
@@ -54,7 +53,6 @@ def index():
     return render_template("index.html", recent=recent)
 
 
-# ---------- Farmer signup / login (stored in PostgreSQL table farmer_signup) ----------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -126,7 +124,6 @@ def logout():
     return redirect(url_for("index"))
 
 
-# ---------- Region CRUD (add/edit/delete: admin only) ----------
 def _require_admin():
     if not session.get("admin"):
         flash("Only admin can do that.", "danger")
@@ -175,7 +172,6 @@ def region_delete(id):
     return redirect(url_for("regions_list"))
 
 
-# ---------- Crop CRUD (add/edit/delete: admin only) ----------
 @app.route("/crops")
 def crops_list():
     rows = db.execute_query("""
@@ -226,7 +222,6 @@ def crop_delete(id):
     return redirect(url_for("crops_list"))
 
 
-# ---------- Pest CRUD ----------
 @app.route("/pests")
 def pests_list():
     rows = db.execute_query("SELECT * FROM pest ORDER BY common_name")
@@ -272,7 +267,6 @@ def pest_delete(id):
     return redirect(url_for("pests_list"))
 
 
-# ---------- Treatment CRUD ----------
 @app.route("/treatments")
 def treatments_list():
     rows = db.execute_query("SELECT * FROM treatment ORDER BY name")
@@ -318,7 +312,6 @@ def treatment_delete(id):
     return redirect(url_for("treatments_list"))
 
 
-# ---------- PestReport CRUD (login required; only creator or admin can edit/delete) ----------
 def _require_login():
     if not session.get("farmer_email"):
         return True
@@ -352,7 +345,6 @@ def pest_report_add():
     if _require_login():
         return redirect(url_for("login", next=url_for("pest_report_add"), reason="pest_reports"))
     pests = db.execute_query("SELECT pest_id, common_name FROM pest ORDER BY common_name")
-    # One row per crop name; region is selected separately below.
     crops = db.execute_query("""
         SELECT DISTINCT ON (name) crop_id, name
         FROM crop
@@ -412,7 +404,6 @@ def pest_report_delete(id):
     return redirect(url_for("pest_reports_list"))
 
 
-# ---------- TreatmentApplication CRUD ----------
 @app.route("/applications")
 def applications_list():
     rows = db.execute_query("""
@@ -474,7 +465,6 @@ def application_delete(id):
     return redirect(url_for("applications_list"))
 
 
-# ---------- Reports (analytics) ----------
 @app.route("/reports/pest-by-region")
 def report_pest_by_region():
     rows = db.execute_query("""
@@ -563,12 +553,10 @@ def report_outcomes_and_effectiveness():
     return render_template("reports/outcomes_and_effectiveness.html", effectiveness_rows=effectiveness_rows)
 
 
-# ---------- Treatment recommendation (advanced) ----------
 @app.route("/recommendation", methods=["GET", "POST"])
 def recommendation():
     if not session.get("farmer_email"):
         return redirect(url_for("login", next=url_for("recommendation"), reason="recommendation"))
-    # One row per crop name (crop is per-region so names repeat; use distinct for dropdown)
     crops = db.execute_query(
         "SELECT DISTINCT ON (name) crop_id, name FROM crop ORDER BY name, crop_id"
     )
@@ -579,7 +567,6 @@ def recommendation():
     selected_crop_name = None
     selected_area = None
 
-    # Read selected values (works for both initial POST and subsequent submits)
     if request.method == "POST":
         mode = (request.form.get("mode") or "").strip()
         selected_crop_id = (request.form.get("crop_id") or "").strip() or None
@@ -591,7 +578,6 @@ def recommendation():
         selected_crop_id = request.args.get("crop_id") or None
         area_str = ""
 
-    # Handle reset: clear selections and skip further processing
     if mode == "reset":
         selected_crop_id = None
         selected_pest_id = None
@@ -599,8 +585,6 @@ def recommendation():
         selected_crop_name = None
         selected_area = None
 
-    # Resolve the selected crop name (used to group multiple region-specific rows,
-    # so "Beans" in different regions are treated as the same crop in reports/recommendations).
     crop_name_for_filter = None
     if selected_crop_id:
         row = db.execute_query(
@@ -611,12 +595,6 @@ def recommendation():
             crop_name_for_filter = row[0]["name"]
             selected_crop_name = crop_name_for_filter
 
-    # Build pest list:
-    # - If a crop is selected, include pests that either:
-    #   * have been reported for any crop row with this name
-    #   * OR have treatment applications recorded for any crop row with this name
-    #   This keeps the dropdown consistent with both Pests by Crop and Treatment Effectiveness/Applications.
-    # - If no crop is selected, show all pests.
     if crop_name_for_filter:
         pests = db.execute_query(
             """
@@ -642,11 +620,8 @@ def recommendation():
     else:
         pests = db.execute_query("SELECT pest_id, common_name FROM pest ORDER BY common_name")
 
-    # If mode is recommend/download and both pest and crop have been chosen, compute recommendations
     if request.method == "POST" and mode in {"recommend", "download"} and selected_pest_id and crop_name_for_filter:
         pest_id = selected_pest_id
-        # Rank treatments by effectiveness, usage, and cost (normalised 0–1, combined into recommendation_score).
-        # Rank treatments by effectiveness, usage, and cost (normalised 0–1, combined into recommendation_score).
         results = db.execute_query("""
             WITH base AS (
                 SELECT
@@ -707,7 +682,6 @@ def recommendation():
             ORDER BY recommendation_score DESC NULLS LAST, avg_effectiveness DESC NULLS LAST
         """, (pest_id, crop_name_for_filter))
 
-        # If farmer provided an area, compute estimated total cost per treatment
         if selected_area:
             try:
                 area_val = float(selected_area)
@@ -719,10 +693,8 @@ def recommendation():
                         else:
                             row["estimated_total_cost"] = None
             except ValueError:
-                # Ignore invalid area input; just skip total-cost calculation
                 selected_area = None
 
-        # If user requested download, return CSV instead of HTML
         if mode == "download":
             output = io.StringIO()
             writer = csv.writer(output)
@@ -767,7 +739,6 @@ def recommendation():
     )
 
 
-# ---------- Analytics (Chart.js, like Srivani) ----------
 @app.route("/analytics")
 def analytics():
     return render_template("analytics.html")
